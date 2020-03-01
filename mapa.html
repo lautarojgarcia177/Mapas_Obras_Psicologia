@@ -3,46 +3,120 @@
 <head>
 <meta charset="utf-8" />
 <title>Display a map</title>
-<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no,width=device-width" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
 <script src="https://api.mapbox.com/mapbox-gl-js/v1.8.0/mapbox-gl.js"></script>
 <link href="https://api.mapbox.com/mapbox-gl-js/v1.8.0/mapbox-gl.css" rel="stylesheet" />
 <style>
 	body { margin: 0; padding: 0; }
 	#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    #hamburguer-menu {
+        display: block;
+        position: relative;
+        margin: 0px auto;
+    }
+    #fly-to-div {
+        display: block;
+        position: relative;
+        margin: 0px auto;
+        width: 220px;
+        height: 70px;
+        padding: 10px;
+        border: 1px;
+        border-style: solid;
+        border-radius: 8px;
+        background: rgb(143, 18, 18);
+    }
+    .fly-to-button {
+        margin: 5px auto;
+        width: 400px;
+        height: 40px;
+        /* padding: 10px; */
+        border: 1px;
+        border-style: solid;
+        border-radius: 8px;
+        font-size: 18px;
+        text-align: center;
+        color: black;
+        background: white;
+        }  
 </style>
 </head>
 <body>
+
 <div id="map"></div>
+
+<br />
+<img id="hamburguer-menu" src="https://www.stickpng.com/assets/images/588a64e7d06f6719692a2d11.png" />
+
+<div id="fly-to-div">
+    <button id="fly-to-facultad-de-psicologia" class="fly-to-button">Facultad de psicologia</button>
+    <button id="fly-to-somewhere" class="fly-to-button">Facultad de psicologia</button>
+</div>
 <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoibGF1dGFyb2pnYXJjaWExNzciLCJhIjoiY2s2c2d3aXd1MDdlMTNmdW13MGowNGw4aiJ9.D3eG5MP-PLqsCOgcDuITHg';
+
     var map = new mapboxgl.Map({
-        container: 'map', // container id
-        style: 'mapbox://styles/lautarojgarcia177/ck6wugtda0uby1ipg11vltp2l', // stylesheet location
-        center: [-64.188906, -31.437262], // starting position [lng, lat]
-        zoom: 18 // starting zoom
-    });
-
-//var marker = new mapboxgl.Marker({'color': '#008000'}).setLngLat([-64.188906, -31.437262]).addTo(map);
-
-map.on('load', function() {
-    map.on('click', function(e) {
-        var features = map.queryRenderedFeatures(e.point, {
-            layers: ['psicologia-puntos']
+            container: 'map', // container id
+            style: 'mapbox://styles/lautarojgarcia177/ck6wugtda0uby1ipg11vltp2l', // stylesheet location
+            center: [-64.188906, -31.437262], // starting position [lng, lat]
+            zoom: 18, // starting zoom
+    /*         pitch: 40,
+            bearing: 20,
+            antialias: true */
         });
-        
-        if (!features.length) {
-            return;
-        }
 
-        var feature = features[0];
 
-        var popupHTML = '<h3>' + feature.properties.title + '</h3>' + '<p>' + feature.properties.description + '</p>' + '<img src="' + feature.properties.picture + '" width="100px" height="100px" />';
-        var popup = new mapboxgl.Popup({ offset: [0, -15] })
-            .setLngLat(feature.geometry.coordinates)
-            .setHTML(popupHTML)
-            .addTo(map);
-    });
-});
+    //var marker = new mapboxgl.Marker({'color': '#008000'}).setLngLat([-64.188906, -31.437262]).addTo(map);
+
+        map.on('load', function() {
+
+            map.on('click', function(e) {
+                var features = map.queryRenderedFeatures(e.point, {
+                    layers: ['psicologia-puntos']
+                });
+                
+                if (!features.length) {
+                    return;
+                }
+
+                var feature = features[0];
+
+                var popupHTML = '<h3>' + feature.properties.title + '</h3>' + '<p>' + feature.properties.description + '</p>' + '<img src="' + feature.properties.picture + '" width="100px" height="100px" />';
+                var popup = new mapboxgl.Popup({ offset: [0, -15] })
+                    .setLngLat(feature.geometry.coordinates)
+                    .setHTML(popupHTML)
+                    .addTo(map);
+            });
+
+            // center on symbol https://docs.mapbox.com/mapbox-gl-js/example/center-on-symbol/
+            map.on('click', 'psicologia-puntos', function(e) {
+                map.flyTo({ center: e.features[0].geometry.coordinates});
+            });
+
+            // Change the cursor to a pointer when the it enters a feature in the 'psicologia-puntos' layer.
+            map.on('mouseenter','psicologia-puntos', function() {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+            // Change it back to a pointer when it leaves.
+            map.on('mouseleave', 'psicologia-puntos', function() {
+                map.getCanvas().style.cursor = '';
+            });
+        });
+
+        //Fly to locations
+        document.getElementById('fly-to-facultad-de-psicologia').addEventListener('click', function() {
+            map.flyTo({
+                center: [-64.188906, -31.437262],
+                essential: true
+            });
+        });
+
+    if(!mapboxgl.supported()) {
+        console.log('Navegador soportado');
+    } else {
+        console.log('Navegador no soportado');
+    }
 </script>
 </body>
 </html>
