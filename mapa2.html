@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Display a map</title>
+<meta name="viewport" content="initial-scale=1.0,maximum-scale=1,user-scalable=no,width=device-width, shrink-to-fit=no" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v1.8.0/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v1.8.0/mapbox-gl.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+<style>
+	body { margin: 0; padding: 0; }
+	#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    .dropdown {
+       padding: 20px;
+    }
+    .mouse-pointer {
+        cursor: pointer;
+    }
+    .btn {
+        background-color: white;
+    }
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="dropdown">
+    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      Ir a
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+      <a id="ir-a-facultad-de-psicologia" class="dropdown-item">Facultad de psicologia</a>
+      <a class="dropdown-item" class="dropdown-item">Lugar 2</a>
+      <a class="dropdown-item" class="dropdown-item">Lugar 3</a>
+    </div>
+  </div>
+
+<script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoibGF1dGFyb2pnYXJjaWExNzciLCJhIjoiY2s2c2d3aXd1MDdlMTNmdW13MGowNGw4aiJ9.D3eG5MP-PLqsCOgcDuITHg';
+
+    var map = new mapboxgl.Map({
+            container: 'map', // container id
+            style: 'mapbox://styles/lautarojgarcia177/ck6wugtda0uby1ipg11vltp2l', // stylesheet location
+            center: [-64.188906, -31.437262], // starting position [lng, lat]
+            zoom: 18, // starting zoom
+    /*         pitch: 40,
+            bearing: 20,
+            antialias: true */
+        });
+
+
+    //var marker = new mapboxgl.Marker({'color': '#008000'}).setLngLat([-64.188906, -31.437262]).addTo(map);
+
+        map.on('load', function() {
+
+            map.on('click', function(e) {
+                var features = map.queryRenderedFeatures(e.point, {
+                    layers: ['psicologia-puntos']
+                });
+                
+                if (!features.length) {
+                    return;
+                }
+
+                var feature = features[0];
+
+                var popupHTML = '<h3>' + feature.properties.title + '</h3>' + '<p>' + feature.properties.description + '</p>' + '<img src="' + feature.properties.picture + '" width="100px" height="100px" />';
+                var popup = new mapboxgl.Popup({ offset: [0, -15] })
+                    .setLngLat(feature.geometry.coordinates)
+                    .setHTML(popupHTML)
+                    .addTo(map);
+            });
+
+            // center on symbol https://docs.mapbox.com/mapbox-gl-js/example/center-on-symbol/
+            map.on('click', 'psicologia-puntos', function(e) {
+                map.flyTo({ center: e.features[0].geometry.coordinates});
+            });
+
+            // Change the cursor to a pointer when the it enters a feature in the 'psicologia-puntos' layer.
+            map.on('mouseenter','psicologia-puntos', function() {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+            // Change it back to a pointer when it leaves.
+            map.on('mouseleave', 'psicologia-puntos', function() {
+                map.getCanvas().style.cursor = '';
+            });
+        });
+
+        //Fly to locations
+        document.getElementById('ir-a-facultad-de-psicologia').addEventListener('click', function() {
+            map.flyTo({
+                center: [-64.188906, -31.437262],
+                essential: true
+            });
+        });
+
+        //change cursors en dropdown
+        var dropdownItems = document.getElementsByClassName('dropdown-item');
+        for(var i = 0; i < dropdownItems.length; i++) {
+            dropdownItems[i].addEventListener('mouseenter', function(e) {
+                e.target.classList.add('mouse-pointer');
+            });
+        };
+
+    if(!mapboxgl.supported()) {
+        console.log('Navegador soportado');
+    } else {
+        console.log('Navegador no soportado');
+    }
+</script>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+</body>
+</html>
